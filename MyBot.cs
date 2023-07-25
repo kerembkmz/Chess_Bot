@@ -14,6 +14,8 @@ public class MyBot : IChessBot
     public Move Think(Board board, Timer timer)
     {
 
+       
+
 
         //double currentPos = EvaluatePosition(board);
         //Console.WriteLine(currentPos); //To check the strenght of the bot and to add features that will make him faster & better.
@@ -21,11 +23,18 @@ public class MyBot : IChessBot
         // You should implement your own evaluation and move selection logic here.
         //return moves[0];
 
+        
+        
+        
         int searchDepth = 5;
         Move[] legalMoves = board.GetLegalMoves();
 
-        
-        
+        Dictionary<Move, double> moveScores = new Dictionary<Move, double>();
+        OrderMoves(legalMoves, moveScores, board);
+
+        // Sorting the moves based on the rule system based on the scoring system on OrderMoves.
+        legalMoves = legalMoves.OrderByDescending(move => moveScores[move]).ToArray();
+
 
         double bestScore = double.MinValue;
         //Start with the first move
@@ -35,7 +44,7 @@ public class MyBot : IChessBot
         {
             board.MakeMove(move);
 
-            double score = -NegaMax(searchDepth - 1, board, double.MinValue, double.MaxValue, false);
+            double score = -NegaMax(searchDepth - 1, board, int.MinValue, int.MaxValue, false);
 
             board.UndoMove(move);
 
@@ -53,31 +62,70 @@ public class MyBot : IChessBot
 
     //https://www.chessprogramming.org/Negamax
     // This is a shorter, more comman way for mini-max.
-    private double NegaMax(int depth, Board board, double alpha, double beta, bool maximizingPlayer)
+    private int NegaMax(int depth, Board board, int alpha, int beta, bool maximizingPlayer)
     {
+
+
+        Dictionary<Move, double> captureScores = new Dictionary<Move, double>();
+        Dictionary<Move, double> moveScores = new Dictionary<Move, double>();
+
+        Move[] legalMoves = board.GetLegalMoves();
+
+        OrderMoves(legalMoves, moveScores, board);
+
+        legalMoves = legalMoves.OrderByDescending(move => moveScores[move]).ToArray();
+
+
+
+        int SearchAllCaptures(int alpha, int beta)
+        {
+            int evaluation = Evaluate(board);
+            if (evaluation >= beta) {
+                return beta;
+            }
+            alpha = Math.Max(alpha, evaluation);
+
+            Move[] captureMoves = board.GetLegalMoves(true);
+            OrderMoves(captureMoves, captureScores, board);
+            captureMoves = captureMoves.OrderByDescending(move => captureScores[move]).ToArray();
+
+            foreach (Move captureMove in captureMoves) {
+                board.MakeMove(captureMove);
+                evaluation = -SearchAllCaptures(-beta, -alpha);
+                board.UndoMove(captureMove);
+
+                if (evaluation >= beta)
+                {
+                    return beta;
+                }
+                alpha = Math.Max(alpha, evaluation);
+            }
+            return alpha;
+
+        }
+
         if (depth == 0 || board.IsDraw() || board.IsInCheckmate())
         {
             // Base Case or Terminal Node.
-            return Evaluate(board);
+            return SearchAllCaptures(alpha, beta);
         }
 
-        double maxScore = double.MinValue;
-        double minScore = double.MaxValue;
 
-        foreach (Move move in board.GetLegalMoves())
+        foreach (Move move in legalMoves)
         {
+
+
+
             board.MakeMove(move);
 
-            double score = -NegaMax(depth - 1, board, -beta, -alpha, !maximizingPlayer);
+            int score = -NegaMax(depth - 1, board, -beta, -alpha, !maximizingPlayer);
 
             board.UndoMove(move);
 
-            if (score > maxScore)
+            if (score > alpha)
             {
-                maxScore = score;
+                alpha = score;
             }
-
-            alpha = Math.Max(alpha, score);
 
             if (alpha >= beta)
             {
@@ -86,7 +134,81 @@ public class MyBot : IChessBot
             }
         }
 
-        return maximizingPlayer ? maxScore : minScore;
+        return alpha;
+    }
+    public void OrderMoves(Move[] moves, Dictionary<Move, double> moveScores, Board board)
+    {
+
+
+        foreach (Move move in moves)
+        {
+            int moveScore = 0;
+            PieceType movePiece = move.MovePieceType;
+            PieceType capturePiece = move.CapturePieceType;
+            PieceType promotionPiece = move.PromotionPieceType;
+            Square targetSquare = move.TargetSquare;
+            
+
+            int movePieceVal = (int)movePiece;
+            int capturePieceVal = (int)capturePiece;
+            int promotionPieceVal = (int)promotionPiece;
+
+            
+
+            // Rule 1.
+            // If opponents piece is more valuable then ours, capture.
+            if (capturePiece != PieceType.None)
+            {
+                moveScore += 20 * (capturePieceVal - movePieceVal);
+            }
+
+
+            // Rule 2.
+            // Promoting is generally a good idea.
+            if (move.IsPromotion)
+            {
+                moveScore += promotionPieceVal;
+            }
+
+            // Rule 3.
+            // If our move's target is attacked by the opponent, then decrease the moveScore.
+            if (board.SquareIsAttackedByOpponent(targetSquare))
+            {
+
+
+                moveScore -= (5 * movePieceVal);
+                
+            }
+
+            // Rule 4: Encourage controlling the center by rewarding moves to center squares.
+            const int centerValue = 20;
+            if (IsInCenter(targetSquare))
+            {
+                moveScore += centerValue;
+            }
+
+            // Rule 5.
+            // If it is a capture move and the moveScore is greater than 0, capture material.
+            if (capturePiece != PieceType.None && capturePieceVal <= movePieceVal) {
+                moveScore += 50; //Bonus to encourage capturing
+            }
+
+
+
+            moveScores[move] = moveScore;
+
+        }
+
+
+
+    }
+
+    // Helper method to check if a square is in the center of the board.
+    private bool IsInCenter(Square square)
+    {
+        int file = square.File;
+        int rank = square.Rank;
+        return (file >= 2 && file <= 5) && (rank >= 2 && rank <= 5);
     }
 
 
@@ -100,10 +222,71 @@ public class MyBot : IChessBot
         // Material evaluation
         evaluation += EvaluateMaterial(board);
 
+        //Threats to bot's pieces.
+        evaluation += CalculateThreat(board);
+
+        //Encouragein controlling the center
+        evaluation += ControlCenter(board);
+
         //Perspective to which side is going to play
         int perspective = (board.IsWhiteToMove) ? 1 : -1;
 
+        if (board.IsInCheck())
+        {
+            // If the bot is in check, encourage it to find a way out.
+            evaluation += 150;
+        }
+
+        if (board.IsInCheckmate())
+        {
+            // If the bot is in checkmate, encourage it to avoid such positions in the future.
+            evaluation += 10000;
+        }
+
         return evaluation * perspective;
+    }
+
+    private static int ControlCenter(Board board)
+    {
+        int centerValue = 20;
+
+        // Encourage controlling center squares for the pieces
+        int centerControlWhite = 0;
+        int centerControlBlack = 0;
+
+        // Squares in the center
+        Square[] centerSquares = { new Square("d4"), new Square("e4"), new Square("d5"), new Square("e5") };
+
+        // Evaluate control of center squares for white pieces
+        foreach (Square square in centerSquares)
+        {
+            if (board.SquareIsAttackedByOpponent(square))
+            {
+                centerControlBlack++;
+            }
+            else if (board.GetPiece(square).IsWhite)
+            {
+                centerControlWhite++;
+            }
+        }
+
+        // Evaluate control of center squares for black pieces
+        foreach (Square square in centerSquares)
+        {
+            if (board.SquareIsAttackedByOpponent(square))
+            {
+                centerControlWhite++;
+            }
+            else if (!board.GetPiece(square).IsWhite)
+            {
+                centerControlBlack++;
+            }
+        }
+
+        // Add the center control evaluation to the overall evaluation
+        int evaluation = centerValue * (centerControlWhite - centerControlBlack);
+
+        return evaluation;
     }
 
     private static int EvaluateMaterial(Board board)
@@ -112,8 +295,8 @@ public class MyBot : IChessBot
 
         // Piece values for evaluation
         const int pawnValue = 100;
-        const int knightValue = 200;
-        const int bishopValue = 300;
+        const int knightValue = 300;
+        const int bishopValue = 320;
         const int rookValue = 500;
         const int queenValue = 900;
 
@@ -127,20 +310,57 @@ public class MyBot : IChessBot
         evaluation -= board.GetPieceList(PieceType.Rook, false).Count * rookValue;
         evaluation += board.GetPieceList(PieceType.Queen, true).Count * queenValue;
         evaluation -= board.GetPieceList(PieceType.Queen, false).Count * queenValue;
+
+        
+
         return evaluation;
     }
 
+    private static int CalculateThreat(Board board)
+    {
+        int threatScore = 0;
+        PieceList[] allPieceLists = board.GetAllPieceLists();
+
+        foreach (PieceList pieceList in allPieceLists)
+        {
+            foreach (Piece piece in pieceList)
+            {
+                if (piece.IsWhite == board.IsWhiteToMove)
+                {
+                    Square pieceSquare = piece.Square;
+
+                    // Check if the current piece is under threat by the opponent
+                    bool isUnderThreat = board.SquareIsAttackedByOpponent(pieceSquare);
+
+                    // If the piece is under threat, apply a penalty based on its value
+                    if (isUnderThreat)
+                    {
+                        int pieceValue = (int)piece.PieceType;
+                        threatScore -= 10 * pieceValue;
+                    }
+                }
+            }
+        }
+
+        return threatScore;
+    }
+
+
+
+
+
+
 }
 
-    
 
 
 
 
 
-    
 
-    
+
+
+
 
 
 
