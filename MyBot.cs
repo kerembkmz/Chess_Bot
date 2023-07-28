@@ -9,42 +9,23 @@ using ChessChallenge.API;
 
 public class MyBot : IChessBot
 {
-
+    private int currentPlayedMoves = 0;
+    private Dictionary<ulong, double> moveScores = new Dictionary<ulong, double>();
 
     public Move Think(Board board, Timer timer)
     {
-
-       
-
-
-        //double currentPos = EvaluatePosition(board);
-        //Console.WriteLine(currentPos); //To check the strenght of the bot and to add features that will make him faster & better.
-        // For this simple example, just return the first legal move.
-        // You should implement your own evaluation and move selection logic here.
-        //return moves[0];
-
-        
-        
-        
-        int searchDepth = 5;
+        int searchDepth = 3; 
         Move[] legalMoves = board.GetLegalMoves();
-
-        Dictionary<Move, double> moveScores = new Dictionary<Move, double>();
-        OrderMoves(legalMoves, moveScores, board);
-
-        // Sorting the moves based on the rule system based on the scoring system on OrderMoves.
-        legalMoves = legalMoves.OrderByDescending(move => moveScores[move]).ToArray();
-
-
+        legalMoves = OrderMoves(legalMoves, board, currentPlayedMoves);
+        
         double bestScore = double.MinValue;
-        //Start with the first move
         Move bestMove = legalMoves[0];
 
         foreach (Move move in legalMoves)
         {
             board.MakeMove(move);
 
-            double score = -NegaMax(searchDepth - 1, board, int.MinValue, int.MaxValue, false);
+            double score = -AlphaBeta(searchDepth - 1, board, double.MinValue, double.MaxValue);
 
             board.UndoMove(move);
 
@@ -55,156 +36,150 @@ public class MyBot : IChessBot
             }
         }
 
+        currentPlayedMoves += 2;
         return bestMove;
-
-
     }
 
-    //https://www.chessprogramming.org/Negamax
-    // This is a shorter, more comman way for mini-max.
-    private int NegaMax(int depth, Board board, int alpha, int beta, bool maximizingPlayer)
+    private double AlphaBeta(int depth, Board board, double alpha, double beta)
     {
-
-
-        Dictionary<Move, double> captureScores = new Dictionary<Move, double>();
-        Dictionary<Move, double> moveScores = new Dictionary<Move, double>();
-
-        Move[] legalMoves = board.GetLegalMoves();
-
-        OrderMoves(legalMoves, moveScores, board);
-
-        legalMoves = legalMoves.OrderByDescending(move => moveScores[move]).ToArray();
-
-
-
-        int SearchAllCaptures(int alpha, int beta)
+        ulong hash = board.ZobristKey;
+        if (moveScores.TryGetValue(hash, out double cachedScore)) 
         {
-            int evaluation = Evaluate(board);
-            if (evaluation >= beta) {
-                return beta;
-            }
-            alpha = Math.Max(alpha, evaluation);
-
-            Move[] captureMoves = board.GetLegalMoves(true);
-            OrderMoves(captureMoves, captureScores, board);
-            captureMoves = captureMoves.OrderByDescending(move => captureScores[move]).ToArray();
-
-            foreach (Move captureMove in captureMoves) {
-                board.MakeMove(captureMove);
-                evaluation = -SearchAllCaptures(-beta, -alpha);
-                board.UndoMove(captureMove);
-
-                if (evaluation >= beta)
-                {
-                    return beta;
-                }
-                alpha = Math.Max(alpha, evaluation);
-            }
-            return alpha;
-
+            return cachedScore;
         }
 
         if (depth == 0 || board.IsDraw() || board.IsInCheckmate())
         {
-            // Base Case or Terminal Node.
-            return SearchAllCaptures(alpha, beta);
+            return Evaluate(board);
         }
 
+        Move[] legalMoves = board.GetLegalMoves();
+        legalMoves = OrderMoves(legalMoves, board, currentPlayedMoves);
 
         foreach (Move move in legalMoves)
         {
-
-
-
             board.MakeMove(move);
 
-            int score = -NegaMax(depth - 1, board, -beta, -alpha, !maximizingPlayer);
+            double score = -AlphaBeta(depth - 1, board, -beta, -alpha);
 
             board.UndoMove(move);
+
+            if (score >= beta)
+            {
+                moveScores[hash] = beta;
+                return beta;
+            }
 
             if (score > alpha)
             {
                 alpha = score;
             }
-
-            if (alpha >= beta)
-            {
-                // Alpha-beta pruning.
-                break;
-            }
         }
 
+        moveScores[hash] = alpha;
         return alpha;
     }
-    public void OrderMoves(Move[] moves, Dictionary<Move, double> moveScores, Board board)
+
+    private double EvaluateMove(Move move, Board board, int a)
     {
+        int moveScore = 0;
+        PieceType movePiece = move.MovePieceType;
+        PieceType capturePiece = move.CapturePieceType;
+        PieceType promotionPiece = move.PromotionPieceType;
+        Square targetSquare = move.TargetSquare;
 
+        int movePieceVal = (int)movePiece;
+        int capturePieceVal = (int)capturePiece;
+        int promotionPieceVal = (int)promotionPiece;
 
-        foreach (Move move in moves)
+        // Debug statements to print move information
+        Console.WriteLine($"Move: {move}, Move Piece: {movePiece}, Capture Piece: {capturePiece}, Promotion Piece: {promotionPiece}, Target Square: {targetSquare}");
+
+        // Rule 1.
+        // If opponent's piece is more valuable than ours, capture.
+        if (capturePiece != PieceType.None)
         {
-            int moveScore = 0;
-            PieceType movePiece = move.MovePieceType;
-            PieceType capturePiece = move.CapturePieceType;
-            PieceType promotionPiece = move.PromotionPieceType;
-            Square targetSquare = move.TargetSquare;
-            
-
-            int movePieceVal = (int)movePiece;
-            int capturePieceVal = (int)capturePiece;
-            int promotionPieceVal = (int)promotionPiece;
-
-            
-
-            // Rule 1.
-            // If opponents piece is more valuable then ours, capture.
-            if (capturePiece != PieceType.None)
-            {
-                moveScore += 20 * (capturePieceVal - movePieceVal);
-            }
-
-
-            // Rule 2.
-            // Promoting is generally a good idea.
-            if (move.IsPromotion)
-            {
-                moveScore += promotionPieceVal;
-            }
-
-            // Rule 3.
-            // If our move's target is attacked by the opponent, then decrease the moveScore.
-            if (board.SquareIsAttackedByOpponent(targetSquare))
-            {
-
-
-                moveScore -= (5 * movePieceVal);
-                
-            }
-
-            // Rule 4: Encourage controlling the center by rewarding moves to center squares.
-            const int centerValue = 20;
-            if (IsInCenter(targetSquare))
-            {
-                moveScore += centerValue;
-            }
-
-            // Rule 5.
-            // If it is a capture move and the moveScore is greater than 0, capture material.
-            if (capturePiece != PieceType.None && capturePieceVal <= movePieceVal) {
-                moveScore += 50; //Bonus to encourage capturing
-            }
-
-
-
-            moveScores[move] = moveScore;
-
+            moveScore += 10 * (capturePieceVal - movePieceVal);
         }
 
+        // Rule 2.
+        // Promoting is generally a good idea.
+        if (move.IsPromotion)
+        {
+            moveScore += 5 * promotionPieceVal;
+        }
+
+        // Rule 3.
+        // If our move's target is attacked by the opponent, then decrease the moveScore.
+        if (board.SquareIsAttackedByOpponent(targetSquare))
+        {
+            moveScore -= (10 * movePieceVal);
+        }
+
+        // Rule 4: Encourage controlling the center by rewarding moves to center squares.
+        const int centerValue = 20;
+        if (IsInCenter(targetSquare))
+        {
+            moveScore += centerValue;
+        }
+
+        // Rule 5.
+        // If it is a capture move and our our piece value is less than the opponents pieceval
+        if (capturePiece != PieceType.None && movePieceVal <= capturePieceVal)
+        {
+            moveScore += 50; // Bonus to encourage capturing
+        }
+
+        // Rule 6
+        // Bonus for pawn, knight, and bishop moves in the early game.
+        if (!IsEndgame(a) && (movePiece == PieceType.Pawn || movePiece == PieceType.Rook)){
+            moveScore += 50;
+        }
+
+
+        else if (!IsEndgame(a) && (movePiece == PieceType.Knight || movePiece == PieceType.Bishop)) {
+            moveScore += 100;
+        }
+
+        else if (!IsEndgame(a) && (movePiece == PieceType.Queen))
+        {
+            moveScore -= 100;
+        }
+
+        // Rule 7:
+        // Encourage castling to activate rooks and king safety.
+        if (!IsEndgame(a) && move.IsCastles)
+        {
+            moveScore += 60;
+        }
+
+        // Debug statement to print move score
+        Console.WriteLine($"Move Score: {moveScore}");
+
+        return moveScore;
+    }
+
+    public Move[] OrderMoves(Move[] moves, Board board, int a)
+    {
+        // Order moves based on a scoring system
+        Array.Sort(moves, (move1, move2) => EvaluateMove(move2, board, a).CompareTo(EvaluateMove(move1, board, a)));
+        return moves;
+    }
+
+    private static bool IsEndgame(int a)
+    {
+        if (a < 15)
+            return false;
+        else
+        {
+            return true;
+        }
 
 
     }
 
     // Helper method to check if a square is in the center of the board.
-    private bool IsInCenter(Square square)
+    private static bool IsInCenter(Square square)
     {
         int file = square.File;
         int rank = square.Rank;
