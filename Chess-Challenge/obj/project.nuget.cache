@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "xXKLlOxXRCDI+aJUwatINYRwNsIJWalmVxDCq+qW/E/qBh06YDVRSau6hPTH1JCRW9LRKMmfZFn3+T5ZXlpR+w==",
+  "success": true,
+  "projectFilePath": "/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/Chess-Challenge.csproj",
+  "expectedPackageFiles": [
+    "/Users/keremsmacbook/.nuget/packages/raylib-cs/4.5.0.2/raylib-cs.4.5.0.2.nupkg.sha512",
+    "/Users/keremsmacbook/.nuget/packages/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg.sha512"
+  ],
+  "logs": []
+}

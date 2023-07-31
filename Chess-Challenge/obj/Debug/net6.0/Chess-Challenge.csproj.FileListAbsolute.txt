@@ -1,0 +1,30 @@
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.csproj.AssemblyReference.cache
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.GeneratedMSBuildEditorConfig.editorconfig
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.AssemblyInfoInputs.cache
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.AssemblyInfo.cs
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.csproj.CoreCompileInputs.cache
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/resources/Fens.txt
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/resources/Pieces.png
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Chess-Challenge
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/src/Evil Bot/EvilBot.cs
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/src/My Bot/MyBot.cs
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/resources/Fonts/OPENSANS-SEMIBOLD.TTF
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/resources/Fonts/sdf.fs
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Chess-Challenge.deps.json
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Chess-Challenge.runtimeconfig.json
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Chess-Challenge.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Chess-Challenge.pdb
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Raylib-cs.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/runtimes/linux-x64/native/libraylib.so
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/runtimes/osx-arm64/native/libraylib.dylib
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/runtimes/osx-x64/native/libraylib.dylib
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/runtimes/win-x64/native/raylib.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/runtimes/win-x86/native/raylib.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Microsoft.CodeAnalysis.CSharp.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/bin/Debug/net6.0/Microsoft.CodeAnalysis.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.csproj.CopyComplete
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/refint/Chess-Challenge.dll
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.pdb
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/Chess-Challenge.genruntimeconfig.cache
+/Users/keremsmacbook/Desktop/gitHub/Chessbot/Chess-Challenge/Chess-Challenge/obj/Debug/net6.0/ref/Chess-Challenge.dll
